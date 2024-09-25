@@ -1,7 +1,7 @@
 body {
-	background-color: rgb(235, 235, 235);
+	background-color: #ebebeb;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
 @keyframes rotation {
     0% {
         transform: rotate(0deg); }
@@ -29,7 +29,7 @@ body {
     animation: rotation 1s linear infinite; }
 
 .nav {
-	overflow: hidden; 
+	overflow: hidden;
 }
 .nav a {
 	float: left;
@@ -66,3 +66,30 @@ body {
 	opacity: 0; }
 .menu-toggle--open .menu-toggle__bar3 {
 	transform: translate(0, -7px) rotate(45deg); }
+
+#loginPopup button {
+	border-radius: 5px;
+	border-width: 1px;
+	border-color: #d4d4d4;
+	background-color: #FFFFFF;
+	border-style: solid;
+	text-align: center;
+	transition: all 0.2s;
+	font-size: 30px;
+	height: 48px;
+	line-height: 48px;
+}
+
+#loginPopup button:hover {
+	border-radius: 5px;
+	border-width: 1px;
+	border-color: #d4d4d4;
+	background-color: #e4e4e4;
+	border-style: solid;
+	text-align: center;
+}
+
+#loginPopup button img {
+	height: 32px;
+	width: 32px;
+}
