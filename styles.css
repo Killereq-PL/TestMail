@@ -67,6 +67,15 @@ body {
 .menu-toggle--open .menu-toggle__bar3 {
 	transform: translate(0, -7px) rotate(45deg); }
 
+#loginPopup h1 {
+	text-align: center;
+}
+
+#loginPopup {
+	margin: auto;
+	width: 15%;
+}
+
 #loginPopup button {
 	border-radius: 5px;
 	border-width: 1px;
@@ -78,6 +87,8 @@ body {
 	font-size: 30px;
 	height: 48px;
 	line-height: 48px;
+    cursor: pointer;
+	margin: auto;
 }
 
 #loginPopup button:hover {
