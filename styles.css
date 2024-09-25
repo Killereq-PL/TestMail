@@ -1,3 +1,7 @@
+body {
+	background-color: rgb(235, 235, 235);
+}
+
 @keyframes rotation {
     0% {
         transform: rotate(0deg); }
@@ -25,7 +29,8 @@
     animation: rotation 1s linear infinite; }
 
 .nav {
-	overflow: hidden; }
+	overflow: hidden; 
+}
 .nav a {
 	float: left;
 	margin: 10px;
