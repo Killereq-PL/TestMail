@@ -36,6 +36,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          api_key: ${{ secrets.API_KEY }}
+          client_id: ${{ secrets.CLIENT_ID }}
           # Upload entire repository
           path: '.'
       - name: Deploy to GitHub Pages
