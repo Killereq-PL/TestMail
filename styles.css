@@ -28,52 +28,99 @@ body {
     -webkit-animation: rotation 1s linear infinite;
     animation: rotation 1s linear infinite; }
 
+hr:first-of-type {
+	position: sticky;
+}
 .nav {
 	overflow: hidden;
+	position: sticky;
 }
+
 .nav a {
 	float: left;
 	margin: 10px;
-	display: block; }
+	display: block; 
+	text-decoration: none;
+	padding: 2px;
+	border-color: #cbcbcb;
+	border-width: 3px;
+	border-style: solid;
+	border-radius: 5px;
+	background-color: #cbcbcb;
+	font-family: monospace;
+	color: #FFFFFF;
+	font-size: 16px;
+}
+
+.nav a:first-child {
+	border: none;
+	background: none;
+	color: #000000;
+}
+
 .nav #menu-toggle {
 	display: none; }
 @media screen and (max-width: 600px) {
 	.nav a:not(:first-child) {
-		display: none; }
+		display: none; 
+	}
 	.nav a#menu-toggle {
 		float: right;
-		display: block; } }
+		display: block; 
+	} 
+}
+
 @media screen and (max-width: 600px) {
 	.nav.nav--open {
-		position: relative; }
+		position: relative; 
+	}
 	.nav.nav--open #menu-toggle {
 		position: absolute;
 		right: 0;
-		top: 0; }
+		top: 0;
+	}
 	.nav.nav--open a {
 		float: none;
 		display: block;
-		text-align: left; } }
+		text-align: left;
+	}
+	.nav.nav--open a:not(#menu-toggle) {
+		width: 80%;
+	}
+}
+
 .menu-toggle__bar1, .menu-toggle__bar2, .menu-toggle__bar3 {
-	width: 21px;
+	width: 19px;
 	height: 3px;
 	background-color: #000000;
 	margin: 4px 0;
-	transition: 0.3s; }
+	transition: 0.3s; 
+}
+
 .menu-toggle--open .menu-toggle__bar1 {
-	transform: translate(0, 7px) rotate(-45deg); }
+	transform: translate(0, 7px) rotate(-45deg); 
+}
+
 .menu-toggle--open .menu-toggle__bar2 {
-	opacity: 0; }
+	opacity: 0; 
+}
+
 .menu-toggle--open .menu-toggle__bar3 {
-	transform: translate(0, -7px) rotate(45deg); }
+	transform: translate(0, -7px) rotate(45deg); 
+}
 
 #loginPopup h1 {
 	text-align: center;
+	font-family: monospace;
+	font-size: 40px;
 }
 
 #loginPopup {
 	margin: auto;
-	width: 15%;
+	width: 50%;
+	align-items: center;
+	text-align: center;
+	line-height: 200px;
 }
 
 #loginPopup button {
@@ -82,13 +129,14 @@ body {
 	border-color: #d4d4d4;
 	background-color: #FFFFFF;
 	border-style: solid;
-	text-align: center;
 	transition: all 0.2s;
 	font-size: 30px;
-	height: 48px;
-	line-height: 48px;
+	height: 64px;
+	padding-left: 10px;
+	padding-right: 10px;
     cursor: pointer;
 	margin: auto;
+	align-items: center;
 }
 
 #loginPopup button:hover {
@@ -101,6 +149,62 @@ body {
 }
 
 #loginPopup button img {
-	height: 32px;
-	width: 32px;
+	max-width: 32px;
+	object-fit: cover;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+#emailMainPage {
+	display: block;
+	margin: auto;
+	text-align: center;
+}
+
+#emailMainPage h1 {
+	text-align: center;
+	font-family: monospace;
+	font-size: 40px;
+}
+
+#emailTable {
+	font-family: monospace;
+	font-size: x-large;
+	font-weight: lighter;
+	border-collapse: collapse;
+	width: 80%;
+	margin: auto;
+	padding: auto;
+	border-radius: 5px;
+	-webkit-user-select: none; /* Chrome/Safari */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none;
+	overflow-y: auto;
+}
+
+#emailTable td, #emailTable th {
+	padding: 8px 8px;
+}
+
+#emailTable tr {
+	border: #d8d8d8 solid 1px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+#emailTable tr:nth-child(even){background-color: #f2f2f2;}
+
+#emailTable tr:hover {background-color: #ddd;}
+
+#emailTable th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	text-align: center;
+	background-color: #efefef;
+	color: white;
+}
+
+.unread {
+	font-weight: bold;
 }
