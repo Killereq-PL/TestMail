@@ -35,6 +35,9 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        env:
+          api_key: ${{ secrets.API_KEY }}
+          client_id: ${{ secrets.CLIENT_ID }}
         with:
           api_key: ${{ secrets.API_KEY }}
           client_id: ${{ secrets.CLIENT_ID }}
