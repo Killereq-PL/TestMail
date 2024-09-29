@@ -3,4 +3,4 @@
 
 Usage:
 
-[killereq-pl.github.io/TestMail](killereq-pl.github.io/TestMail)?userId={userId token}&oauth={OAuth2 token}
+[killereq-pl.github.io/TestMail](https://killereq-pl.github.io/TestMail)?userId={userId token}&oauth={OAuth2 token}
