@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<meta name="description" content="Email Test" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
-	<link rel="icon" href="favicon.png">
+	<link rel="icon" href="logo.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body>
@@ -14,10 +14,10 @@
 		<div class="loader"></div>
 	</div>
 	<nav class="nav" id="nav">
-		<a href=""><image src="logo.png" alt="TestMail"></image></a>
-		<a disabled href="#menu-item-1">Menu Item 1</a>
-		<a disabled href="#menu-item-2">Menu Item 2</a>
-		<a disabled href="#menu-item-3">Menu Item 3</a>
+		<a id="logo" href=""><img src="logo.png" alt="TestMail" width="32px"></img></a>
+		<a disabled href="javascript:void(0);">Menu Item 1</a>
+		<a disabled href="javascript:void(0);">Menu Item 2</a>
+		<a disabled style="float: right;" href="javascript:void(0);" id="signout_button" onclick="handleSignoutClick()">Sign Out</a>
 		<a disabled href="javascript:void(0);" id="menu-toggle" onclick="togglemenu()">
 			<div class="menu-toggle__bar1"></div>
 			<div class="menu-toggle__bar2"></div>
@@ -28,33 +28,25 @@
 	
 	<div id="loginPopup">
 		<h1>Log in</h1>
-        <button onclick="loginbutton()">Log In with <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google"></button>
+    <button id="authorize_button" onclick="loginbutton()">Log In with <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google"></button>
 	</div>
+  <div id="emailLoading"><span></span><br><div id="emailLoadIndicator">Loading Emails...</div></div>
 	<div id="emailMainPage">
-		<h1>Received Mail:</h1>
-    <table id="emailTable">
-      <tr class="unread">
-        <td><span class="material-symbols-rounded">call_received</span></td>
-        <td>From</td>
-        <td>Subject</td>
-        <td>Date</td>
-      </tr>
-      <tr>
-        <td><span class="material-symbols-rounded">call_made</span></td>
-        <td>From</td>
-        <td>Subject</td>
-        <td>Date</td>
-      </tr>
-    </table>
+		<h1>All E-Mails:</h1>
+    <table id="emailTable"></table>
 	</div>
-
-  <p>Gmail API Quickstart</p>
-
-  <!--Add buttons to initiate auth sequence and sign out-->
-  <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-  <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
-
-  <pre id="content" style="white-space: pre-wrap;"></pre>
+  <div id="emailContentPage">
+    <div id="emailContentToolsNavbar">
+      <div>
+        <button onclick="emailContentBack()"><span class="material-symbols-rounded">arrow_back</span></button>
+        <button onclick="emailContentDelete()"><span class="material-symbols-rounded">delete</span></button>
+      </div>
+      <h3 id="emailContentDate">Date</h3>
+    </div>
+    <h2 id="emailContentSender">Sender</h2>
+    <h1 id="emailContentHeader">Header</h1>
+    <div id="emailContent">Content</div>
+  </div>
   
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 	<script>
@@ -77,28 +69,43 @@
   /* exported handleSignoutClick */
 
   // TODO(developer): Set to client ID and API key from the Developer Console
-  const CLIENT_ID = '';
-  const API_KEY = '';
+  const CLIENT_ID = "";
+  const API_KEY = "";
 
   // Discovery doc URL for APIs used by the quickstart
-  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
+  const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest";
 
   // Authorization scopes required by the API; multiple scopes can be
   // included, separated by spaces.
-  const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.modify https://mail.google.com/';
+  const SCOPES = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.modify https://mail.google.com/";
 
   let tokenClient;
   let gapiInited = false;
   let gisInited = false;
 
-  document.getElementById('authorize_button').style.visibility = 'hidden';
-  document.getElementById('signout_button').style.visibility = 'hidden';
+  let messageRaw = Array();
+  let messageIds = Array();
+  let messageSubjects = Array();
+  let messageDate = Array();
+  let messageIsReceived = Array();
+  let messageReceivers = Array();
+  let messageSenders = Array();
+  let messageHeaders = Array();
+  let currentMessage = -1;
+
+  $(document).ready(function(){
+    $("#authorize_button").hide();
+    $("#signout_button").hide();
+    $("#emailMainPage").hide();
+    $("#emailLoading").hide();
+    $("#emailContentPage").hide();
+  });
 
   /**
    * Callback after api.js is loaded.
    */
   function gapiLoaded() {
-    gapi.load('client', initializeGapiClient);
+    gapi.load("client", initializeGapiClient);
   }
 
   /**
@@ -121,7 +128,7 @@
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
-      callback: '', // defined later
+      callback: "", // defined later
     });
     gisInited = true;
     maybeEnableButtons();
@@ -132,7 +139,7 @@
    */
   function maybeEnableButtons() {
     if (gapiInited && gisInited) {
-      document.getElementById('authorize_button').style.visibility = 'visible';
+      $("#authorize_button").show(500);
     }
   }
 
@@ -144,18 +151,20 @@
       if (resp.error !== undefined) {
         throw (resp);
       }
-      document.getElementById('signout_button').style.visibility = 'visible';
-      document.getElementById('authorize_button').innerText = 'Refresh';
+      $("#signout_button").show(500);
+      $("#loginPopup").hide(500);
+      $("#authorize_button").hide(500);
+      $("#emailLoading").show(500);
       await listEmails();
     };
 
     if (gapi.client.getToken() === null) {
       // Prompt the user to select a Google Account and ask for consent to share their data
       // when establishing a new session.
-      tokenClient.requestAccessToken({prompt: 'consent'});
+      tokenClient.requestAccessToken({prompt: "consent"});
     } else {
       // Skip display of account chooser and consent dialog for an existing session.
-      tokenClient.requestAccessToken({prompt: ''});
+      tokenClient.requestAccessToken({prompt: ""});
     }
   }
 
@@ -166,109 +175,150 @@
     const token = gapi.client.getToken();
     if (token !== null) {
       google.accounts.oauth2.revoke(token.access_token);
-      gapi.client.setToken('');
-      document.getElementById('content').innerText = '';
-      document.getElementById('authorize_button').innerText = 'Authorize';
-      document.getElementById('signout_button').style.visibility = 'hidden';
+      gapi.client.setToken("");
+      $("#loginPopup").show(500);
+      $("#authorize_button").show(500);
+      $("#signout_button").hide(500);
+      $("#emailMainPage").hide(500);
     }
   }
 
-  /**
-   * Print all Labels in the authorized user's inbox. If no labels
-   * are found an appropriate message is printed.
-   */
-  async function listLabels() {
-    let response;
-    try {
-      response = await gapi.client.gmail.users.labels.list({
-        'userId': 'me',
-      });
-    } catch (err) {
-      document.getElementById('content').innerText = err.message;
+  function emailContentBack() {
+    $("#emailContentPage").hide(500);
+    currentMessage = -1;
+    $("#emailMainPage").show(500);
+  }
+
+  function emailContentDelete() {
+    if (confirm("Delete?")) {
+      gapi.client.gmail.users.messages.trash({"userId":"me", "id": messageIds[currentMessage]}).then(
+      function(value) {  
+        $("#emailContentPage").hide(500);
+        $("#emailLoading").show(500);
+        listEmails().then(
+          function() {
+            console.log("Emails have been reloaded after deletion.")
+          },
+          function(err) {
+            console.error("Error: ", err);
+          }
+        )
+      },
+      function(err) {
+        console.error("Error: ", err);
+      }
+      )
+    } else {
       return;
     }
-    const labels = response.result.labels;
-    if (!labels || labels.length == 0) {
-      document.getElementById('content').innerText = 'No labels found.';
-      return;
-    }
-    // Flatten to string to display
-    const output = labels.reduce(
-        (str, label) => `${str}${label.name}\n`,
-        'Labels:\n');
-    document.getElementById('content').innerText = output;
+  }
+
+  function showEmail(id) {
+    $("#emailMainPage").hide(500);
+    currentMessage = id;
+    $("#emailContentHeader").text(messageSubjects[id]);
+    $("#emailContent").empty();
+    $("#emailContentDate").text(new Date(messageDate[id]).toLocaleDateString());
+    $("#emailContentSender").text(messageSenders[id]);
+    $("#emailContentPage").show(500);
   }
 
   /**
    * List all received mails.
    */
-    async function listEmails() {
+  async function listEmails() {
     let response;
     let temp1;
-    let messageHeaders = Array();
-    let emailAdress = await gapi.client.gmail.users.getProfile({
-          'userId':'me'
-        }).emailAdress
+    let emailAdress = await gapi.client.gmail.users.getProfile({"userId":"me"})
+    emailAdress = emailAdress.result.emailAddress;
+    messageRaw = Array();
+    messageIds = Array();
+    messageSubjects = Array();
+    messageDate = Array();
+    messageIsReceived = Array();
+    messageReceivers = Array();
+    messageSenders = Array();
+    messageHeaders = Array();
+    currentMessage = -1;
     
     try {
-      response = await gapi.client.gmail.users.messages.list({
-        'userId': 'me',
-      });
-      
+      response = await gapi.client.gmail.users.messages.list({"userId": "me"});
       for (let x in response.result.messages) {
         temp1 = response.result.messages[x];
         temp1 = String(temp1.id);
-        messageHeaders.push(await gapi.client.gmail.users.messages.get({
-          'userId':'me',
-          'id': temp1
-        }));
+        messageIds.push(temp1);
+        $("#emailLoadIndicator").text(["Loading Emails... ", x, "/", response.result.resultSizeEstimate].join(""));
+        messageHeaders.push(await gapi.client.gmail.users.messages.get({"userId":"me", "id": temp1}));
+        let temp2 = await gapi.client.gmail.users.messages.get({"userId":"me", "id": temp1, "format": "raw"});
+        temp2 = temp2.result.raw;
+        messageRaw.push(temp2);
       }
       console.log(messageHeaders);
+      console.log(messageRaw);
     } catch (err) {
-      document.getElementById('content').innerText = err.message;
+      $("#emailLoadIndicator").text(err.message);
       return;
     }
     if (!messageHeaders || messageHeaders.length == 0) {
-      document.getElementById('content').innerText = 'No emails found.';
+      $("#emailLoadIndicator").text("No emails found.");
       return;
     }
-
-    // Extract relevant headers
-    let messageSubjects = Array()
+    
+    // Extract relevant info
+    let regex = /[-A-Za-z0-9!#$%&'*+\/=?^_`{|}~]+(?:\.[-A-Za-z0-9!#$%&'*+\/=?^_`{|}~]+)*@(?:[A-Za-z0-9](?:[-A-Za-z0-9]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[-A-Za-z0-9]*[A-Za-z0-9])?/i;
     for (let x in messageHeaders) {
       for (let y in messageHeaders[x].result.payload.headers) {
-        if (messageHeaders[x].result.payload.headers[y].name === 'Subject') {
-          messageSubjects.push(messageHeaders[x].result.payload.headers[y].value);
-        }
-      }
-    }
-
-    // Extract is email sent or received
-    let messageIsReceived = Array()
-    for (let x in messageHeaders) {
-      for (let y in messageHeaders[x].result.payload.headers) {
-        if (messageHeaders[x].result.payload.headers[y].name === 'From') {
-          if (messageHeaders[x].result.payload.headers[y].value == emailAdress) {
-            messageIsReceived.push(true);
-          } else {
+        if (messageHeaders[x].result.payload.headers[y].name == "From") {
+          messageSenders.push(messageHeaders[x].result.payload.headers[y].value);
+          if (regex.exec(messageHeaders[x].result.payload.headers[y].value) == emailAdress) {
             messageIsReceived.push(false);
+          } else {
+            messageIsReceived.push(true);
           }
         }
+        if (messageHeaders[x].result.payload.headers[y].name === "Subject") {
+          messageSubjects.push(messageHeaders[x].result.payload.headers[y].value);
+        }
+        if (messageHeaders[x].result.payload.headers[y].name === "Date") {
+          messageDate.push(messageHeaders[x].result.payload.headers[y].value);
+        }
       }
     }
+
+    $("#emailTable").html("");
+    for (let x in messageHeaders) {
+      let isReceivedElement = document.createElement("td");
+      isReceivedElement.innerHTML = messageIsReceived[x] ? "<span class=\"material-symbols-rounded\">call_received</span>" : "<span class=\"material-symbols-rounded\">call_made</span>";
+      let fromElement = document.createElement("td");
+      fromElement.innerText = messageSenders[x];
+      let subjectElement = document.createElement("td");
+      subjectElement.innerText = messageSubjects[x];
+      let dateElement = document.createElement("td");
+      dateElement.innerText = new Date(messageDate[x]).toLocaleDateString();
+      let row = document.createElement("tr");
+      row.appendChild(isReceivedElement);
+      row.appendChild(fromElement);
+      row.appendChild(subjectElement);
+      row.appendChild(dateElement);
+      $("#emailTable").append(row);
+      //if (messageIsRead[x]) {row.classList.add("unread");}
+      row.addEventListener("click", function() {
+        //window.open(`https://mail.google.com/mail/u/0/#inbox/${messageHeaders[x].result.id}`, "_blank");
+        showEmail(this.rowIndex);
+      });
+    }
+
+    $("#emailLoading").hide(500);
+    $("#emailMainPage").show(500);
 
     // Flatten to string to display
     const output = messageSubjects.reduce(
         (str, header) => `${str}${header}\n`,
-        'Emails:\n');
-    document.getElementById('content').innerText = output;
-    console.log(output)
+        "Emails:\n");
   }
-	</script>
-	<script type="text/javascript">
-		$(window).on('load', function() {
-			$("#loader-wrapper").fadeOut(700);
-		});
+	$(window).on("load", function() {
+		$("#loader-wrapper").fadeOut(700);
+	});
 	</script>
 	<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
