@@ -279,3 +279,40 @@ hr:first-of-type {
 	float: right;
 	text-align: right;
 }
+
+#emailContentUsers {
+	display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+	float: left;
+	width: 100%;
+}
+
+.error {
+	color: red;
+	font-weight: bold;
+}
+
+#secretFooter {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-evenly;
+	align-items: stretch;
+	background-image: linear-gradient(#ebebeb, #e5e5e5);
+	padding-top: 32px;
+	color: #909090;
+}
+
+#secretFooter a {
+	color: #5b5b5b;
+    text-decoration: underline;
+}
+
+#secretFooter a:hover {
+	color: #909090;
+}

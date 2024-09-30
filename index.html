@@ -29,7 +29,8 @@
 	<div id="loginPopup">
 		<h1>Log in</h1>
     <button id="authorize_button" onclick="loginbutton()">Log In with <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google"></button>
-	</div>
+    <h2 class="error" id="login_error">Please provide the API tokens in the URI query.</h2>
+  </div>
   <div id="emailLoading"><span></span><br><div id="emailLoadIndicator">Loading Emails...</div></div>
 	<div id="emailMainPage">
 		<h1>All E-Mails:</h1>
@@ -43,9 +44,18 @@
       </div>
       <h3 id="emailContentDate">Date</h3>
     </div>
-    <h2 id="emailContentSender">Sender</h2>
+    <div id="emailContentUsers">
+      <h3 id="emailContentSender">Sender</h3>
+      <span class="material-symbols-rounded">arrow_right_alt</span>
+      <h3 id="emailContentReceiver">Receiver</h3>
+    </div>
     <h1 id="emailContentHeader">Header</h1>
     <div id="emailContent">Content</div>
+  </div>
+
+  <div id="secretFooter">
+    <span>Client ID: <a id="cida" onclick="toggle_client_id()" href="javascript:void(0);">none</a></span>
+    <span>OAuth2 Token: <a id="oata" onclick="toggle_api_key()" href="javascript:void(0);">none</a></span>
   </div>
   
 	<script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
@@ -68,9 +78,19 @@
   /* exported handleAuthClick */
   /* exported handleSignoutClick */
 
-  // TODO(developer): Set to client ID and API key from the Developer Console
-  const CLIENT_ID = "";
-  const API_KEY = "";
+  let noToken;
+  let CLIENT_ID;
+  let API_KEY;
+  const urlParams = new URLSearchParams(window.location.search);
+  if (window.location.search != "" && urlParams.has('userId') && urlParams.has('oauth')) {
+    CLIENT_ID = urlParams.get('userId');
+    API_KEY = urlParams.get('oauth');
+    noToken = false;
+  } else {
+    CLIENT_ID = "";
+    API_KEY = "";
+    noToken = true;
+  }
 
   // Discovery doc URL for APIs used by the quickstart
   const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest";
@@ -99,7 +119,26 @@
     $("#emailMainPage").hide();
     $("#emailLoading").hide();
     $("#emailContentPage").hide();
+    if (noToken) {$("#login_error").show();} else {$("#login_error").hide();}
+    let client_id_censored = noToken? "No Id" : CLIENT_ID.replace(/./g, '*');
+    $("#cida").text(client_id_censored);
+    let api_key_censored = noToken? "No Id" : API_KEY.replace(/./g, '*');
+    $("#oata").text(api_key_censored);
   });
+
+  let client_id_toggled = false;
+  function toggle_client_id() {
+    client_id_toggled = !client_id_toggled;
+    let client_id_censored = noToken? "No Id" : CLIENT_ID.replace(/./g, '*');
+    $("#cida").text(client_id_toggled? CLIENT_ID : client_id_censored);
+  }
+
+  let api_key_toggled = false;
+  function toggle_api_key() {
+    api_key_toggled = !api_key_toggled;
+    let api_key_censored = noToken? "No Id" : API_KEY.replace(/./g, '*');
+    $("#oata").text(api_key_toggled? API_KEY : api_key_censored);
+  }
 
   /**
    * Callback after api.js is loaded.
@@ -220,6 +259,7 @@
     $("#emailContent").empty();
     $("#emailContentDate").text(new Date(messageDate[id]).toLocaleDateString());
     $("#emailContentSender").text(messageSenders[id]);
+    $("#emailContentReceiver").text(messageReceivers[id]);
     $("#emailContentPage").show(500);
   }
 
@@ -275,6 +315,9 @@
           } else {
             messageIsReceived.push(true);
           }
+        }
+        if (messageHeaders[x].result.payload.headers[y].name === "To") {
+          messageReceivers.push(messageHeaders[x].result.payload.headers[y].value);
         }
         if (messageHeaders[x].result.payload.headers[y].name === "Subject") {
           messageSubjects.push(messageHeaders[x].result.payload.headers[y].value);
